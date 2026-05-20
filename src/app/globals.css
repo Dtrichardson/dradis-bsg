@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --dradis-bg: #000604;
+  --dradis-grid: #0a3a1a;
+  --dradis-sweep: #2bff88;
+  --dradis-friend: #2bff88;
+  --dradis-foe: #ff2a2a;
+  --dradis-text: #8effb1;
+  --dradis-amber: #ffae00;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body {
+  background: var(--dradis-bg);
+  color: var(--dradis-text);
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* CRT scanlines + subtle vignette */
+.crt::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  z-index: 50;
+  mix-blend-mode: multiply;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.crt::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 55%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  z-index: 49;
+}
+
+.glow-text {
+  text-shadow:
+    0 0 4px rgba(43, 255, 136, 0.8),
+    0 0 12px rgba(43, 255, 136, 0.5);
+}
+
+.glow-red {
+  text-shadow:
+    0 0 4px rgba(255, 42, 42, 0.9),
+    0 0 12px rgba(255, 42, 42, 0.6);
+}
+
+@keyframes pulse-alarm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.alarm {
+  animation: pulse-alarm 0.8s ease-in-out infinite;
+}
+
+button {
+  cursor: pointer;
 }
