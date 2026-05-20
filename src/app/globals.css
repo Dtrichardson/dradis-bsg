@@ -1,39 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  --dradis-bg: #000604;
-  --dradis-grid: #0a3a1a;
-  --dradis-sweep: #2bff88;
-  --dradis-friend: #2bff88;
-  --dradis-foe: #ff2a2a;
-  --dradis-text: #8effb1;
+  --dradis-bg: #02110a;
+  --dradis-deep: #000604;
+  --dradis-grid: #0c4a24;
+  --dradis-grid-bright: #1c7a40;
+  --dradis-sweep: #5cffaa;
+  --dradis-friend: #4dff96;
+  --dradis-foe: #ff3030;
+  --dradis-text: #93ffba;
   --dradis-amber: #ffae00;
 }
 
 html, body {
-  background: var(--dradis-bg);
+  background: var(--dradis-deep);
   color: var(--dradis-text);
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.02em;
+  font-feature-settings: "tnum" on, "lnum" on;
 }
 
-/* CRT scanlines + subtle vignette */
+/* === CRT scanline overlay === */
 .crt::before {
   content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0px,
-    rgba(0, 0, 0, 0) 2px,
-    rgba(0, 0, 0, 0.18) 3px,
-    rgba(0, 0, 0, 0) 4px
-  );
-  z-index: 50;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.32) 3px,
+      rgba(0, 0, 0, 0) 4px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 3px,
+      rgba(0, 30, 10, 0.04) 4px
+    );
+  z-index: 60;
   mix-blend-mode: multiply;
+  animation: crt-flicker 6s steps(20, end) infinite;
 }
 
+/* === CRT vignette === */
 .crt::after {
   content: "";
   pointer-events: none;
@@ -41,33 +53,111 @@ html, body {
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    rgba(0, 0, 0, 0) 55%,
-    rgba(0, 0, 0, 0.7) 100%
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.85) 100%
   );
-  z-index: 49;
+  z-index: 59;
+}
+
+/* === Static noise overlay (animated by canvas — see noise layer) === */
+.noise {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  opacity: 0.06;
+  mix-blend-mode: screen;
+}
+
+@keyframes crt-flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: 0.92; }
+  97.5% { opacity: 0.99; }
+  98% { opacity: 0.86; }
+  98.5% { opacity: 1; }
+}
+
+@keyframes phosphor-flicker {
+  0%, 100% { filter: brightness(1) contrast(1); }
+  47% { filter: brightness(1.04) contrast(1.02); }
+  48% { filter: brightness(0.94) contrast(0.98); }
+  49% { filter: brightness(1) contrast(1); }
+}
+
+.phosphor {
+  animation: phosphor-flicker 9s ease-in-out infinite;
 }
 
 .glow-text {
   text-shadow:
-    0 0 4px rgba(43, 255, 136, 0.8),
-    0 0 12px rgba(43, 255, 136, 0.5);
+    0 0 3px rgba(80, 255, 150, 0.95),
+    0 0 8px rgba(80, 255, 150, 0.55),
+    0 0 18px rgba(80, 255, 150, 0.25);
+  color: #cfffe0;
+}
+
+.glow-amber {
+  text-shadow:
+    0 0 3px rgba(255, 174, 0, 0.95),
+    0 0 8px rgba(255, 174, 0, 0.55);
+  color: #ffd278;
 }
 
 .glow-red {
   text-shadow:
-    0 0 4px rgba(255, 42, 42, 0.9),
-    0 0 12px rgba(255, 42, 42, 0.6);
+    0 0 3px rgba(255, 60, 60, 0.95),
+    0 0 8px rgba(255, 60, 60, 0.55),
+    0 0 18px rgba(255, 60, 60, 0.3);
+  color: #ff8b8b;
 }
 
-@keyframes pulse-alarm {
+@keyframes alarm-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  50% { opacity: 0.4; }
 }
+.alarm { animation: alarm-pulse 0.85s ease-in-out infinite; }
 
-.alarm {
-  animation: pulse-alarm 0.8s ease-in-out infinite;
+@keyframes data-blink {
+  0%, 92%, 100% { opacity: 1; }
+  94% { opacity: 0.4; }
+  96% { opacity: 1; }
 }
+.blink { animation: data-blink 3s ease-in-out infinite; }
 
 button {
   cursor: pointer;
+  font-family: inherit;
+}
+
+/* mil panel */
+.panel {
+  border: 1px solid rgba(28, 122, 64, 0.55);
+  background:
+    linear-gradient(180deg, rgba(8, 24, 14, 0.85) 0%, rgba(2, 12, 6, 0.85) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    inset 0 0 24px rgba(0, 60, 25, 0.15);
+}
+.panel-title {
+  background: rgba(28, 122, 64, 0.22);
+  border-bottom: 1px solid rgba(28, 122, 64, 0.6);
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: #b8ffd0;
+  text-shadow: 0 0 6px rgba(80, 255, 150, 0.5);
+}
+
+.dim { color: #4a8862; }
+.tick { color: #6cc88c; }
+
+/* Marquee */
+.marquee {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 90s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
