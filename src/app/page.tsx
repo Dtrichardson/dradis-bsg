@@ -303,23 +303,28 @@ export default function Dradis() {
       }
 
       // ============ PHOSPHOR TRAIL BUFFER ============
+      // Paint the leading edge of the sweep into an offscreen buffer each frame,
+      // then fade the whole buffer slightly. The result is a long fading green
+      // tail behind the sweep — real phosphor persistence.
       if (trailCtx) {
-        // fade existing trail
+        // fade existing trail (slower fade = longer tail)
         trailCtx.globalCompositeOperation = "destination-out";
-        trailCtx.fillStyle = "rgba(0,0,0,0.06)";
+        trailCtx.fillStyle = "rgba(0,0,0,0.025)";
         trailCtx.fillRect(0, 0, w, h);
         trailCtx.globalCompositeOperation = "source-over";
 
-        // paint sweep cone wedge into trail
+        // paint a thin wedge at the current sweep position
         const sweepRad = degToRad(sweep - 90);
-        const coneWidth = degToRad(2.2);
-        const grad = trailCtx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        const wedgeDeg = SWEEP_DEG_PER_S * dt + 0.5; // cover gap between frames
+        const wedgeRad = degToRad(wedgeDeg);
+        const grad = trailCtx.createRadialGradient(cx, cy, R * 0.05, cx, cy, R);
         grad.addColorStop(0, "rgba(60,255,140,0.0)");
-        grad.addColorStop(0.7, "rgba(80,255,150,0.18)");
-        grad.addColorStop(1, "rgba(120,255,180,0.55)");
+        grad.addColorStop(0.4, "rgba(80,255,150,0.22)");
+        grad.addColorStop(0.85, "rgba(140,255,190,0.55)");
+        grad.addColorStop(1, "rgba(180,255,210,0.75)");
         trailCtx.beginPath();
         trailCtx.moveTo(cx, cy);
-        trailCtx.arc(cx, cy, R, sweepRad - coneWidth, sweepRad);
+        trailCtx.arc(cx, cy, R, sweepRad - wedgeRad, sweepRad);
         trailCtx.closePath();
         trailCtx.fillStyle = grad;
         trailCtx.fill();
