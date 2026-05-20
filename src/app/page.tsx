@@ -313,21 +313,26 @@ export default function Dradis() {
         trailCtx.fillRect(0, 0, w, h);
         trailCtx.globalCompositeOperation = "source-over";
 
-        // paint a thin wedge at the current sweep position
+        // Paint a wedge at the current sweep position. Cover slightly more than
+        // the per-frame angular delta so consecutive wedges overlap → smooth tail
+        // with no banding.
         const sweepRad = degToRad(sweep - 90);
-        const wedgeDeg = SWEEP_DEG_PER_S * dt + 0.5; // cover gap between frames
+        const wedgeDeg = SWEEP_DEG_PER_S * dt + 1.8; // overlap previous frame
         const wedgeRad = degToRad(wedgeDeg);
         const grad = trailCtx.createRadialGradient(cx, cy, R * 0.05, cx, cy, R);
         grad.addColorStop(0, "rgba(60,255,140,0.0)");
-        grad.addColorStop(0.4, "rgba(80,255,150,0.22)");
-        grad.addColorStop(0.85, "rgba(140,255,190,0.55)");
-        grad.addColorStop(1, "rgba(180,255,210,0.75)");
+        grad.addColorStop(0.4, "rgba(80,255,150,0.18)");
+        grad.addColorStop(0.85, "rgba(140,255,190,0.45)");
+        grad.addColorStop(1, "rgba(180,255,210,0.65)");
         trailCtx.beginPath();
         trailCtx.moveTo(cx, cy);
         trailCtx.arc(cx, cy, R, sweepRad - wedgeRad, sweepRad);
         trailCtx.closePath();
         trailCtx.fillStyle = grad;
+        // soften the wedge edges so we don't see a hard radial line
+        trailCtx.filter = "blur(1.5px)";
         trailCtx.fill();
+        trailCtx.filter = "none";
       }
 
       // ============ MAIN DRAW ============
@@ -745,8 +750,8 @@ export default function Dradis() {
       </main>
 
       {/* ============ BOTTOM TICKER ============ */}
-      <footer className="border-t border-green-900/70 bg-black/80 overflow-hidden">
-        <div className="marquee text-[10px] py-1 dim tracking-widest">
+      <footer className="border-t border-green-900/70 bg-black/80 overflow-hidden h-7 flex items-center">
+        <div className="marquee text-[10px] dim tracking-widest leading-none">
           {[...COMMS_LINES, ...COMMS_LINES].map((line, i) => (
             <span key={i} className="px-6">
               <span className="tick">▶</span>{" "}
